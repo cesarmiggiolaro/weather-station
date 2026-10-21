@@ -17,10 +17,13 @@ ESTAÇÃO METEOROLÓGICA - ESP32-S2 Mini + tela redonda 2,1" (GC9B72)
 
    Energia
    - Placa de carga B+ / B-  ->  bateria + / -
-   - Bateria +  ->  chave liga/desliga  ->  diodo Schottky 1N5817
-     (faixa virada para o ESP)  ->  pino VBUS do S2 Mini
-   - Bateria -  ->  GND
-   - Medição: depois da chave e antes do diodo, 100k -> GPIO 1 -> 100k -> GND
+   - Placa de carga OUT+  ->  chave liga/desliga  ->  HT7333 pino 2 (VIN)
+   - HT7333 pino 3 (VOUT)  ->  pino 3V3 do S2 Mini
+   - HT7333 pino 1 (GND) e placa de carga OUT-  ->  GND
+     (ordem do HT7333 em SOT-89; confira na folha de dados do seu)
+   - 10 µF entre VIN e GND e 10 µF entre VOUT e GND, perto do HT7333
+   - 470 a 1000 µF entre 3V3 e GND, perto do ESP (perna - no GND)
+   - Medição: depois da chave e antes do HT7333, 100k -> GPIO 1 -> 100k -> GND
 
    Sensor AHT20 + BMP280 (opcional)
    VDD -> 3V3      (nunca 5 V: o BMP280 aguenta no máximo 3,6 V)
@@ -30,8 +33,13 @@ ESTAÇÃO METEOROLÓGICA - ESP32-S2 Mini + tela redonda 2,1" (GC9B72)
    Deixe o sensor fora da caixa ou longe do ESP e da tela, que esquentam
    e fazem a temperatura de casa marcar mais alto.
 
-   NUNCA ligue a bateria no pino 3V3.
-   Sem o diodo, NÃO plugue o USB do ESP com a bateria ligada.
+   ANTES DE LIGAR
+   - Antes de ligar o fio do 3V3 no ESP, ligue a chave e meça o pino 3
+     do HT7333: tem que dar 3,3 V.
+   - NUNCA ligue a bateria (nem o OUT+ da placa de carga) no pino 3V3:
+     sempre passando pelo HT7333.
+   - USB do ESP só para gravar: desligue a chave antes de plugar o cabo.
+   - Para carregar a bateria, desligue a chave.
 
 2) IDE ARDUINO
 
@@ -52,6 +60,9 @@ ESTAÇÃO METEOROLÓGICA - ESP32-S2 Mini + tela redonda 2,1" (GC9B72)
      Se aparecer "(reiniciou: ...)" na última linha, o ESP reiniciou
      sozinho e o texto diz o motivo.
 
+   - "(reiniciou: queda de tensão)": o HT7333 não segurou um pico do
+     Wi-Fi. Confira o capacitor de 470 a 1000 µF perto do 3V3 e use fios
+     curtos entre o regulador e o ESP.
    - Imagem de lado ou de cabeça para baixo: mude ROTACAO (0 a 3).
    - Sol azul em vez de amarelo: troque ORDEM_RGB.
    - Cores em negativo: troque INVERTER_CORES.
