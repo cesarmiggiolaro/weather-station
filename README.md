@@ -21,7 +21,9 @@ O brilho acompanha a hora: cheio de dia, 70% a partir das 18h, 40% a partir das 
 | Placa de carga TP4056 com proteção | carrega a bateria pelo USB-C |
 | Bateria 18650 | alimentação |
 | Chave liga/desliga | |
-| Diodo Schottky 1N5817 | deixa plugar o USB do ESP com a bateria ligada |
+| Regulador HT7333 (3,3 V, SOT-89) | baixa a tensão da bateria para os 3,3 V do ESP e da tela |
+| 2 capacitores de 10 µF | entrada e saída do HT7333 |
+| 1 capacitor de 470 a 1000 µF | segura os picos de consumo do Wi-Fi no 3V3 |
 | 2 resistores de 100 kΩ | medição da bateria |
 | Sensor AHT20 + BMP280 (opcional) | temperatura, umidade e pressão de casa |
 
@@ -43,13 +45,24 @@ O brilho acompanha a hora: cheio de dia, 70% a partir das 18h, 40% a partir das 
 
 ### Energia
 
-- Placa de carga B+ / B− → bateria + / −
-- Bateria + → chave liga/desliga → diodo 1N5817 (faixa virada para o ESP) → pino VBUS do S2 Mini
-- Bateria − → GND
-- Medição da bateria: depois da chave e antes do diodo, 100 kΩ → GPIO 1 → 100 kΩ → GND
+O HT7333 transforma os 3,0 a 4,2 V da bateria nos 3,3 V que entram direto no pino 3V3 do ESP. A tela e o sensor usam esse mesmo 3V3.
 
-> **Nunca** ligue a bateria no pino 3V3.
-> Sem o diodo, **não** plugue o USB do ESP com a bateria ligada.
+- Placa de carga B+ / B− → bateria + / −
+- Placa de carga OUT+ → chave liga/desliga → HT7333 pino 2 (VIN)
+- HT7333 pino 3 (VOUT) → pino 3V3 do S2 Mini
+- HT7333 pino 1 (GND) e placa de carga OUT− → GND
+- 10 µF entre VIN e GND e 10 µF entre VOUT e GND, perto do HT7333
+- 470 a 1000 µF entre 3V3 e GND, perto do ESP (perna negativa no GND)
+- Medição da bateria: depois da chave e antes do HT7333, 100 kΩ → GPIO 1 → 100 kΩ → GND
+
+A ordem 1 GND, 2 VIN, 3 VOUT é a do HT7333 em SOT-89. Confira na folha de dados do seu.
+
+### Antes de ligar
+
+- Antes de ligar o fio do 3V3 no ESP, ligue a chave e meça o pino 3 do HT7333: tem que dar 3,3 V.
+- **Nunca** ligue a bateria (nem o OUT+ da placa de carga) no pino 3V3. Sempre passando pelo HT7333.
+- O USB do ESP é só para gravar: desligue a chave antes de plugar o cabo. Com a chave ligada, o regulador da placa e o HT7333 alimentariam o mesmo 3V3.
+- Para carregar a bateria, desligue a chave. Com a estação ligada, a placa de carga pode não perceber que a bateria encheu.
 
 ### Sensor AHT20 + BMP280 (opcional)
 
@@ -132,6 +145,7 @@ Ao ligar, a tela mostra a etapa em que está: "Conectando ao Wi-Fi", "Procurando
 | "Sem Wi-Fi" | confira `WIFI_NOME` e `WIFI_SENHA` |
 | "Cidade não encontrada" | confira `CIDADE` e `PAIS`, ou preencha `LATITUDE` e `LONGITUDE` |
 | "(reiniciou: ...)" na última linha | o ESP reiniciou sozinho, e o texto diz o motivo |
+| "(reiniciou: queda de tensão)" | o HT7333 não segurou um pico do Wi-Fi: confira o capacitor de 470 a 1000 µF perto do 3V3 e use fios curtos entre o regulador e o ESP |
 | Temperatura de casa alta demais | afaste o sensor do ESP ou use `AJUSTE_TEMPERATURA_CASA` |
 
 ## Arquivos
