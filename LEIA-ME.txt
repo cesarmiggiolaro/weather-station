@@ -1,0 +1,68 @@
+ESTAÇÃO METEOROLÓGICA - ESP32-S2 Mini + tela redonda 2,1" (GC9B72)
+==================================================================
+
+1) LIGAÇÕES
+
+   Tela        ESP32-S2 Mini
+   ----        -------------
+   GND         GND
+   VCC         3V3
+   SCL         GPIO 7
+   SDA         GPIO 11
+   RST         GPIO 3
+   DC          GPIO 5
+   CS          GPIO 12
+   BL          GPIO 16
+   SDO, TE     não ligar
+
+   Energia
+   - Placa de carga B+ / B-  ->  bateria + / -
+   - Bateria +  ->  chave liga/desliga  ->  diodo Schottky 1N5817
+     (faixa virada para o ESP)  ->  pino VBUS do S2 Mini
+   - Bateria -  ->  GND
+   - Medição: depois da chave e antes do diodo, 100k -> GPIO 1 -> 100k -> GND
+
+   Sensor AHT20 + BMP280 (opcional)
+   VDD -> 3V3      (nunca 5 V: o BMP280 aguenta no máximo 3,6 V)
+   GND -> GND
+   SDA -> GPIO 33  (furo de fora da linha "33/34")
+   SCL -> GPIO 35  (furo de fora da linha "35/36")
+   Deixe o sensor fora da caixa ou longe do ESP e da tela, que esquentam
+   e fazem a temperatura de casa marcar mais alto.
+
+   NUNCA ligue a bateria no pino 3V3.
+   Sem o diodo, NÃO plugue o USB do ESP com a bateria ligada.
+
+2) IDE ARDUINO
+
+   - Instale o suporte "esp32" (Espressif) no Gerenciador de Placas.
+   - Instale as bibliotecas "LovyanGFX" (1.2.28 ou mais nova) e "ArduinoJson" (7.x).
+   - Abra estacao_meteo.ino (todos os arquivos ficam na mesma pasta).
+   - Ferramentas > Placa: "LOLIN S2 Mini"
+   - Ferramentas > Partition Scheme: "No OTA (2MB APP/2MB SPIFFS)"
+   - Na aba config.h, preencha WIFI_NOME, WIFI_SENHA e CIDADE.
+     Nas atualizações do firmware, mantenha o seu config.h.
+   - Para gravar pela primeira vez: segure o botão 0, aperte RST, solte o 0.
+     Depois de gravar, aperte RST.
+
+3) SE ALGO SAIR DIFERENTE (constantes no config.h)
+
+   - Ao ligar, a tela mostra o passo em que está: "Conectando ao Wi-Fi",
+     "Procurando a cidade", "Buscando a previsão", "Acertando o relógio".
+     Se aparecer "(reiniciou: ...)" na última linha, o ESP reiniciou
+     sozinho e o texto diz o motivo.
+
+   - Imagem de lado ou de cabeça para baixo: mude ROTACAO (0 a 3).
+   - Sol azul em vez de amarelo: troque ORDEM_RGB.
+   - Cores em negativo: troque INVERTER_CORES.
+   - Chuvisco ou falhas na imagem: baixe VELOCIDADE_SPI para 5000000
+     e encurte os fios.
+   - Fica em "Iniciando..." e não sai disso: abra o Monitor Serial e
+     veja a mensagem de erro.
+   - Tela preta com luz acesa: confira SCL, SDA, DC, CS e RST.
+   - Não ligou o divisor da bateria: MEDIR_BATERIA = false.
+   - Temperatura de casa alta demais: ajuste AJUSTE_TEMPERATURA_CASA
+     (ex.: -2.0f) ou afaste o sensor do ESP.
+   - Mensagens de diagnóstico: Monitor Serial a 115200.
+
+Dados do tempo: Open-Meteo (open-meteo.com). Fonte: Inter (licença SIL OFL).

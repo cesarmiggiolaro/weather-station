@@ -1,0 +1,8 @@
+# Configuração pessoal (Wi-Fi, senha, cidade). Use _config.h como modelo.
+config.h
+
+# macOS
+.DS_Store
+
+# Saída de compilação
+build/
